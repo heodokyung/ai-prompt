@@ -779,7 +779,7 @@ window.PROMPT_CONFIG = {
               "label": "직접 입력"
             }
           ],
-          "recommendedValue": "10"
+          "recommendedValue": "아이디어 10개를 만들어줘. 양과 질의 균형을 맞추고, 중복되는 아이디어는 제거해줘."
         },
         {
           "id": "customIdeaCount",
@@ -861,6 +861,7 @@ window.PROMPT_CONFIG = {
         "theme": "AI 프롬프트 변환기를 개인 생산성 앱의 핵심 기능으로 확장하는 아이디어",
         "goal": "사용자가 복잡한 프롬프트 작성법을 몰라도 목적에 맞는 고품질 요청문을 만들게 하고 싶다.",
         "targetUser": "AI 사용이 익숙하지 않은 일반 사용자, 블로그 작성자, 개발자, 기획자",
+        "ideaCount": "아이디어 10개를 만들어줘. 양과 질의 균형을 맞추고, 중복되는 아이디어는 제거해줘.",
         "resources": "1인 개발, 무료 도구 우선, 우선은 정적 HTML/CSS/JS로 구현 가능해야 함",
         "evaluationCriteria": "실행 난이도, 사용자 가치, 유지보수 비용, 차별성, 수익화 가능성, 장기 확장성"
       },
@@ -2209,7 +2210,7 @@ window.PROMPT_CONFIG = {
         "lifeFunMode": "fortune",
         "lifeFunTopic": "올해의 흐름을 재미있게 보고 싶다. 단, 실제 미래를 단정하지 말고 자기성찰용으로 해줘.",
         "lifeFunContext": "요즘 일과 돈, 인간관계에 대한 고민이 있다. 가볍지만 생각할 거리가 있는 방식이면 좋겠다.",
-        "interactionMode": "대화형: 한 번에 한 질문",
+        "interactionMode": "질문은 한 번에 하나씩만 하고, 사용자가 답하기 전에는 다음 질문으로 넘어가지 마.",
         "mood": "유머러스하지만 따뜻하게, 너무 불안하게 만들지 않게",
         "fortuneStyle": "타로/운세 느낌은 살리되 현실적인 조언과 실천 미션을 포함"
       },
