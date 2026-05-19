@@ -57,7 +57,6 @@ prompt-main/
 │        ├─ toast.js                   # 토스트 메시지
 │        └─ floating-actions.js        # 하단 플로팅 액션바
 └─ docs/
-   ├─ PHASE2_REFACTOR.md               # 리팩터링 변경 요약
    ├─ audit-phase2.mjs                 # 정적 검증 (Node 실행)
    └─ audit-runtime.mjs                # jsdom 통합 검증
 ```
