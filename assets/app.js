@@ -754,19 +754,51 @@
       return;
     }
 
+    const allFields = [...(type.requiredFields || []), ...(type.optionalFields || [])];
+    const fieldMap = new Map(allFields.map((f) => [f.id, f]));
+
+    // conditional 필드(showWhen/requiredWhen)는 source가 먼저 채워져야 visible 상태가 되므로 후순위로 정렬한다.
+    const sortedEntries = entries.slice().sort((a, b) => {
+      const fa = fieldMap.get(a[0]);
+      const fb = fieldMap.get(b[0]);
+      const ah = fa && (fa.showWhen || fa.requiredWhen) ? 1 : 0;
+      const bh = fb && (fb.showWhen || fb.requiredWhen) ? 1 : 0;
+      return ah - bh;
+    });
+
     const filledFieldIds = [];
+    const skipped = [];
 
-    entries.forEach(([fieldId, value]) => {
+    sortedEntries.forEach(([fieldId, value]) => {
       const input = document.getElementById(fieldId);
-      if (!input) return;
-
-      const currentValue = input.value.trim();
-      const nextValue = String(value);
-
-      if (!currentValue || currentValue === nextValue) {
-        input.value = nextValue;
-        filledFieldIds.push(fieldId);
+      if (!input) {
+        skipped.push({ fieldId, reason: 'no-input' });
+        return;
       }
+
+      const nextValue = String(value);
+      const currentValue = (input.value || '').trim();
+
+      if (input.tagName === 'SELECT') {
+        const optionExists = Array.from(input.options).some((opt) => opt.value === nextValue);
+        if (!optionExists) {
+          // 잘못된 sampleValues(label을 value로 넣은 케이스 등) → 콘솔 경고만 남기고 건너뜀
+          console.warn(`[샘플 입력] ${type.key}.${fieldId} 의 sampleValue가 option value와 일치하지 않습니다: "${nextValue}"`);
+          skipped.push({ fieldId, reason: 'option-mismatch' });
+          return;
+        }
+        // 사용자 입력 보존: 빈 값이거나 동일 값일 때만 덮어쓴다
+        if (currentValue && currentValue !== nextValue) return;
+        input.value = nextValue;
+      } else {
+        if (currentValue && currentValue !== nextValue) return;
+        input.value = nextValue;
+      }
+
+      // change 이벤트로 다음 conditional 필드의 visible 상태를 동기 갱신
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      filledFieldIds.push(fieldId);
     });
 
     state.sample = {
@@ -780,7 +812,8 @@
     updateSampleButtonState();
 
     if (filledFieldIds.length) {
-      showToast(`${type.label} 샘플을 입력했습니다. 다시 누르면 샘플값만 지웁니다.`);
+      const skippedMsg = skipped.length ? ` (${skipped.length}개 필드는 건너뜀)` : '';
+      showToast(`${type.label} 샘플을 입력했습니다.${skippedMsg} 다시 누르면 샘플값만 지웁니다.`);
     } else {
       showToast('빈 필드가 없어 샘플을 넣지 않았습니다. 기존 입력값은 유지했습니다.');
     }
