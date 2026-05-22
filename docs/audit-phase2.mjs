@@ -139,5 +139,17 @@ log(indexHtml.includes('type="module"') && indexHtml.includes('./assets/js/main.
 log(!indexHtml.includes('./assets/app.js'),
   'index.html 에서 기존 단일 app.js 참조 제거');
 
+
+// 9. 프롬프트 출력 품질 회귀 방지 — 빈 option value/typeDefault/작업 팁 문구가 결과 프롬프트에 새지 않도록 정적 검사
+const buildPromptSource = readFileSync(join(root, 'assets/js/build-prompt.js'), 'utf8');
+log(!buildPromptSource.includes('match.prompt || match.value'),
+  '빈 prompt option이 value(typeDefault/custom)로 출력되지 않음');
+log(buildPromptSource.includes("outputRaw === 'typeDefault'") && buildPromptSource.includes("? ''"),
+  'outputFormatMode=typeDefault는 유형 기본 출력 형식으로 처리');
+log(!buildPromptSource.includes('[출력 형식 - 사용자 지정]'),
+  '프리셋 출력 형식을 사용자 지정으로 잘못 표기하지 않음');
+log(!buildPromptSource.includes('작업 팁:'),
+  '작업 팁 문구가 실행 지시처럼 그대로 출력되지 않음');
+
 console.log('\n' + (failed === 0 ? '✓ 모든 검증 통과' : `✗ ${failed}개 검증 실패`));
 process.exit(failed === 0 ? 0 : 1);

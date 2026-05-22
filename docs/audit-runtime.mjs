@@ -88,6 +88,10 @@ log(generated.includes('1985-03-15'), '프롬프트에 birthDate 입력값 반�
 log(generated.includes('[작업 유형]\n사주/만세력'), '프롬프트에 [작업 유형] 사주/만세력 명시');
 log(generated.includes('[자기 검증 루프]'), '프롬프트에 자기 검증 섹션 포함');
 log(generated.includes('운명을 단정'), '프롬프트에 안전 가드(운명 단정 금지) 포함');
+log(!generated.includes('[출력 형식 - 사용자 지정]'), '프롬프트에 잘못된 사용자 지정 출력 형식 제목 미노출');
+log(!generated.includes('typeDefault'), '프롬프트에 typeDefault 값 미노출');
+log(!generated.includes('작업 팁:'), '프롬프트에 작업 팁 실행 지시형 문구 미노출');
+log(generated.includes('[참고 팁]'), '프롬프트 하단에 참고 팁 섹션 포함');
 
 const lifeFunRadio = document.querySelector('input[name="promptType"][value="lifeFun"]');
 lifeFunRadio.checked = true;

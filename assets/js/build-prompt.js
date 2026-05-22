@@ -64,7 +64,11 @@ function collectCommonOptions() {
   const clarityRaw = els.clarityLevel.value.trim();
   const clarity = clarityRaw === 'custom' ? els.customClarity.value.trim() : getOptionPrompt(els.clarityLevel, config.clarityOptions);
   const outputRaw = els.outputFormatMode.value.trim();
-  const outputFormat = outputRaw === 'custom' ? els.customOutputFormat.value.trim() : getOptionPrompt(els.outputFormatMode, config.outputFormatOptions);
+  const outputFormat = outputRaw === 'custom'
+    ? els.customOutputFormat.value.trim()
+    : outputRaw === 'typeDefault'
+      ? ''
+      : getOptionPrompt(els.outputFormatMode, config.outputFormatOptions);
 
   return {
     clarity,
@@ -73,6 +77,7 @@ function collectCommonOptions() {
     personaMode: els.personaMode.value.trim(),
     personaModeInstruction: getOptionPrompt(els.personaMode, config.personaModeOptions),
     toneMode: getOptionPrompt(els.toneMode, config.toneOptions),
+    outputFormatMode: outputRaw,
     outputFormat,
     clarityNote: getTextValue(els.clarityNote),
     responseDepthNote: getTextValue(els.responseDepthNote),
@@ -92,7 +97,7 @@ function collectCommonOptions() {
 function getOptionPrompt(select, options) {
   if (!select) return '';
   const match = options.find((option) => option.value === select.value);
-  return (match && (match.prompt || match.value)) || '';
+  return (match && match.prompt) || '';
 }
 
 function getTextValue(input) {
@@ -147,30 +152,34 @@ function buildPersonaSection(type, commonOptions) {
 
 function buildDiscussionRulesSection(commonOptions) {
   const rules = ['[토론 및 판단 규칙]'];
+  const addRule = (text) => {
+    if (!text) return;
+    rules.push(`${rules.length}. ${text}`);
+  };
 
   if (commonOptions.personaMode === 'full') {
-    rules.push('1. 각 인격체는 돌아가면서 의견을 내고, 다른 인격체의 주장에 대해 최소 1개의 구체적 반론 또는 보완점을 제시해줘.');
-    rules.push('2. 추상적인 동의는 금지하고, 동의한다면 근거 또는 보강 논리를 추가해줘.');
+    addRule('각 인격체는 돌아가면서 의견을 내고, 다른 인격체의 주장에 대해 최소 1개의 구체적 반론 또는 보완점을 제시해줘.');
+    addRule('추상적인 동의는 금지하고, 동의한다면 근거 또는 보강 논리를 추가해줘.');
   } else if (commonOptions.personaMode === 'compact') {
-    rules.push('1. 각 인격체의 관점은 반영하되 긴 토론 라운드는 생략하고 핵심 체크 결과만 보여줘.');
-    rules.push('2. 필요한 반론은 1~2개만 압축해서 제시해줘.');
+    addRule('각 인격체의 관점은 반영하되 긴 토론 라운드는 생략하고 핵심 체크 결과만 보여줘.');
+    addRule('필요한 반론은 1~2개만 압축해서 제시해줘.');
   } else {
-    rules.push('1. 먼저 이 작업이 명시적 다중 인격 토론이 필요한지 판단해줘.');
-    rules.push('2. 단순 정보 확인이면 토론을 길게 쓰지 말고, 비교/의사결정/리스크/코딩/아이디어/글쓰기 작업이면 인격체별 의견과 반론을 짧게 반영해줘.');
+    addRule('먼저 이 작업이 명시적 다중 인격 토론이 필요한지 판단해줘.');
+    addRule('단순 정보 확인이면 토론을 길게 쓰지 말고, 비교/의사결정/리스크/코딩/아이디어/글쓰기 작업이면 인격체별 의견과 반론을 짧게 반영해줘.');
   }
 
-  rules.push('3. 최종 결정권자는 모든 의견을 종합해 가장 현실적이고 실행 가능한 답을 정해줘.');
-  rules.push('4. 답변은 단계적으로 구성하되, 내부 사고 과정 전체가 아니라 핵심 판단 근거와 검토 결과만 보여줘.');
-  rules.push(`5. ${commonOptions.promptStrength}`);
-  rules.push(`6. ${commonOptions.toneMode}`);
-  rules.push(`7. ${commonOptions.responseDepth}`);
+  addRule('최종 결정권자는 모든 의견을 종합해 가장 현실적이고 실행 가능한 답을 정해줘.');
+  addRule('답변은 단계적으로 구성하되, 내부 사고 과정 전체가 아니라 핵심 판단 근거와 검토 결과만 보여줘.');
+  addRule(commonOptions.promptStrength);
+  addRule(commonOptions.toneMode);
+  addRule(commonOptions.responseDepth);
 
-  if (commonOptions.promptStrengthNote) rules.push(`8. 프롬프트 강도 추가 요청: ${commonOptions.promptStrengthNote}`);
-  if (commonOptions.toneModeNote) rules.push(`9. 답변 톤/태도 추가 요청: ${commonOptions.toneModeNote}`);
-  if (commonOptions.responseDepthNote) rules.push(`10. 답변 깊이 추가 요청: ${commonOptions.responseDepthNote}`);
+  if (commonOptions.promptStrengthNote) addRule(`프롬프트 강도 추가 요청: ${commonOptions.promptStrengthNote}`);
+  if (commonOptions.toneModeNote) addRule(`답변 톤/태도 추가 요청: ${commonOptions.toneModeNote}`);
+  if (commonOptions.responseDepthNote) addRule(`답변 깊이 추가 요청: ${commonOptions.responseDepthNote}`);
 
   if (commonOptions.redTeamMode) {
-    rules.push('레드팀 옵션이 켜져 있으므로, 사용자의 요구 자체가 합당한지 먼저 검토하고 약점, 위험, 더 나은 요청 방식, 개선안과 해결방법을 우선 제시해줘.');
+    addRule('레드팀 옵션이 켜져 있으므로, 사용자의 요구 자체가 합당한지 먼저 검토하고 약점, 위험, 더 나은 요청 방식, 개선안과 해결방법을 우선 제시해줘.');
   }
 
   return rules.join('\n');
@@ -187,6 +196,8 @@ function buildStandardsSection(type, commonOptions) {
     '[반드시 지킬 기준]',
     ...type.standards.map((standard) => `- ${standard}`)
   ];
+
+  standards.push('- 사용자가 입력하지 않은 빈 항목은 프롬프트 본문에 노출하지 마. 답변 품질에 꼭 필요한 정보만 “확인 필요” 또는 “합리적 가정”으로 구분해서 처리해줘.');
 
   if (commonOptions.clarity) standards.push(`- ${commonOptions.clarity}`);
   if (commonOptions.clarityNote) standards.push(`- 설명 수준 추가 요청: ${commonOptions.clarityNote}`);
@@ -211,11 +222,12 @@ function buildStandardsSection(type, commonOptions) {
 }
 
 function buildOutputFormatSection(type, commonOptions) {
-  const lines = [];
+  const lines = ['[출력 형식]'];
+
   if (commonOptions.outputFormat) {
-    lines.push('[출력 형식 - 사용자 지정]', commonOptions.outputFormat);
+    lines.push(commonOptions.outputFormat);
   } else {
-    lines.push('[출력 형식]', ...type.outputFormat.map((item) => `- ${item}`));
+    lines.push(...type.outputFormat.map((item) => `- ${item}`));
   }
 
   if (commonOptions.outputFormatNote) {
@@ -251,9 +263,14 @@ function buildSelfReviewSection(commonOptions) {
 }
 
 function buildClosingSection(type) {
-  return [
+  const lines = [
     '[마무리 요청]',
-    '마지막에는 핵심 결론, 바로 실행할 다음 행동, 추가 팁을 정리해줘.',
-    `작업 팁: ${type.tip}`
-  ].join('\n');
+    '마지막에는 핵심 결론, 바로 실행할 다음 행동, 추가 팁을 정리해줘.'
+  ];
+
+  if (type.tip) {
+    lines.push('', '[참고 팁]', '아래 팁은 더 좋은 답변을 받기 위한 참고 정보입니다. 답변 본문에 그대로 반복하지 말고 필요한 경우에만 반영해줘.', `- ${type.tip}`);
+  }
+
+  return lines.join('\n');
 }
